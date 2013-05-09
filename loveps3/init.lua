@@ -50,7 +50,7 @@ function getController(number, buttonListener, stickListener)
 end
 
 --- Check for any button presses or stick movements
-function controller:update()
+function controller:update(restrict)
     if self.buttonListener ~= nil then 
         for i=1,self.numButtons do 
             if love.joystick.isDown(self.number, i) then
@@ -61,14 +61,45 @@ function controller:update()
     if self.stickListener ~= nil then
         leftStickVector = getStickVector(self)
         rightStickVector = getStickVector(self, 2)
-
-        if magnitude(leftStickVector) > 0.5 then
+        if restrict == false or magnitude(leftStickVector) > 0.2 then
             stickListener('LEFT', leftStickVector)
         end
-        if magnitude(rightStickVector) > 0.5 then
+        if restrict == false or magnitude(rightStickVector) > 0.2 then
             stickListener('RIGHT', rightStickVector)
         end
     end
+end
+
+-- Some helpers
+
+local leftVector = {x = -1, y = 0}
+local rightVector = {x = 1, y = 0}
+local upVector = {x = 0, y = -1}
+local downVector = {x = 0, y = 1}
+
+function  pointingLeft(vector)
+    return vector.x < 0 and pointing(vector, leftVector)
+end
+
+function  pointingRight(vector)
+   return vector.x > 0 and pointing(vector, rightVector) 
+end
+
+function  pointingUp(vector)
+   return vector.y < 0 and pointing(vector, upVector) 
+end
+
+function  pointingDown(vector)
+   return vector.y > 0 and pointing(vector, downVector) 
+end
+
+function  pointing(vector, baseVector)
+    if magnitude(vector) >= 1 then
+        if angleBetween(baseVector, vector) <= 1 then
+            return true
+        end
+    end
+    return false
 end
 
 -- Return the magnitude of the specified vector
